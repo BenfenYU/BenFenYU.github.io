@@ -72,6 +72,10 @@ char s[]，s和s的地址是一码事。
 
 3.连接阶段，将上一步成生的各个目标文件，根据一些参数，连接生成最终的可执行文件，主要的工作就是重定位各个目标文件的函数，变量等，相当于将所有目标文件中的二进制码按一定的规范整理到一个文件中。
 
+### [if (condition) 中的condition](https://www.zhihu.com/question/62828287/answer/203239828)
+能做 if 判断条件的表达式要求值是算术类型（整数、各种浮点数）或指针类型。0 或 NULL 视为假，其他值视为真。不要求表达式含有比较运算符。赋值表达式不是语句，赋值表达式本身有值，类型是左运算数的类型。另外表达式加上 ; 后都能成为表达式语句。譬如 1; 也是一条语句。
+
+
 ## unistd.h
 <code>unistd.h</code> 是 C语言 和 C++ 程序设计语言中提供对 POSIX 操作系统 API 的访问功能的头文件的名称。是Unix Standard的缩写。该头文件由 POSIX.1 标准（单一UNIX规范的基础）提出，故所有遵循该标准的操作系统和编译器均应提供该头文件（如 Unix 的所有官方版本，包括 Mac OS X、Linux等）。
 
@@ -90,3 +94,57 @@ whence是计算位置的起点，
 SEEK_SET： 文件开头
 SEEK_CUR： 当前位置
 SEEK_END： 文件结尾
+
+## GDB
+
+### Tutorials
+[Debugging Under Unix: gdb Tutorial](https://www.cs.cmu.edu/~gilpin/tutorial/)
+
+[GDB Tutorial](http://www.cs.toronto.edu/~krueger/csc209h/tut/gdb_tutorial.html)
+
+[GDB Tutorial](https://web.eecs.umich.edu/~sugih/pointers/summary.html)
+
+使用方式概述：
+1. 编译时带 -g 参数，如：
+   ```shell
+    gcc -g -o crash crash.c
+   ```
+2. 查看程序栈，设断点等调试.
+
+### run
+运行程序
+
+### x {address}
+examine, 探查address内存地址上的值
+
+### break
+在某处设置断点
+
+### condition {断点号} {条件}
+在某处设置条件断点，程序运行至此，并且满足条件时，断点才会生效，如：
+```
+condition 1 num==10
+```
+
+### step / s
+下一步，会进入调用的函数内部
+
+### next / n
+下一行，不会进入调用的函数内部
+
+### until / u
+This is like n, except that if we are in a loop, u will continue execution until the loop is exited.
+
+### print / p {var}
+打印变量var
+
+### backtrace
+打印函数调用栈
+
+### delete / d {n}
+删除所有断点，或者断点n
+
+### GDB 报错
+#### warning: Error disabling address space randomization: Operation not permitted
+
+https://stackoverflow.com/a/35860616
