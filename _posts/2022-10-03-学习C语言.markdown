@@ -4,10 +4,91 @@ title:  "学习C语言"
 date:   2022-10-03 13:20:13 +0800
 categories: C
 ---
-做这些教程时，学习C语言。
-[https://github.com/SWPFlow/C-Project-Based-Tutorials](https://github.com/SWPFlow/C-Project-Based-Tutorials)
+## C语言本身的一些定义和细节
 
-## C语言学习
+### 结构体
+
+#### 定义和初始化
+
+如下代码，tag是结构体的名字，可以用来定义新的结构体变量，variable-list是定义的新的结构体变量
+
+```c
+struct tag { 
+    member-list
+    member-list 
+    member-list  
+    ...
+} variable-list ;
+```
+
+除此之外，定义和声明方式还有
+
+```c
+// 定义了匿名的结构体，以及名称为s1的结构体变量
+struct 
+{
+    int a;
+    char b;
+    double c;
+} s1;
+ 
+// 定义了结构体SIMPLE
+struct SIMPLE
+{
+    int a;
+    char b;
+    double c;
+};
+//用SIMPLE标签的结构体，另外声明了变量t1、t2、t3
+struct SIMPLE t1, t2[20], *t3;
+ 
+//也可以用typedef创建新类型
+typedef struct
+{
+    int a;
+    char b;
+    double c; 
+} Simple2;
+//现在可以用Simple2作为类型声明新的结构体变量
+Simple2 u1, u2[20], *u3;
+```
+
+### va_list, va_start, va_end
+是为了处理可变参数而定义的宏，比如printf函数就使用了这个宏，
+```c
+int printf(const char *format, ...); 
+```
+可变参数一定是函数的后几个参数，在栈中，则位于参数栈的栈底的几个位置，前面的定长参数中包含着不定长参数的数目和类型信息，通过这种方式，可以取到不同的参数。
+举例：
+```c
+#include <stdarg.h>
+
+int sum(int num, int arg, ...){
+   va_list ap;
+   int n = num;
+
+   va_start(ap, arg);
+   int summary = arg;
+   while(--n > 0){
+      summary += va_arg(ap, int);
+   }
+
+   va_end(ap);
+   return summary;
+}
+```
+va_list其实是 char* ，va_start 用来确定第一个不定参数的位置，即指向第一个不定参数，va_arg 用来取当前位置的参数，并根据参数类型向后移动指针，va_end 清除。va_start和va_end要成对使用。
+
+### volatile 关键字
+用于告诉编译器，这个函数不会返回，可以让gcc产生更好一些的代码。
+举例：
+```c
+volatile void do_exit(long code);
+```
+
+### &=
+与等
+a&=b 等价于 a = a&b
 
 ### . 和 ->
 
@@ -76,12 +157,12 @@ char s[]，s和s的地址是一码事。
 能做 if 判断条件的表达式要求值是算术类型（整数、各种浮点数）或指针类型。0 或 NULL 视为假，其他值视为真。不要求表达式含有比较运算符。赋值表达式不是语句，赋值表达式本身有值，类型是左运算数的类型。另外表达式加上 ; 后都能成为表达式语句。譬如 1; 也是一条语句。
 
 
-## unistd.h
+### unistd.h
 <code>unistd.h</code> 是 C语言 和 C++ 程序设计语言中提供对 POSIX 操作系统 API 的访问功能的头文件的名称。是Unix Standard的缩写。该头文件由 POSIX.1 标准（单一UNIX规范的基础）提出，故所有遵循该标准的操作系统和编译器均应提供该头文件（如 Unix 的所有官方版本，包括 Mac OS X、Linux等）。
 
 对于类Unix系统，<code>unistd.h</code> 中所定义的接口通常都是大量针对系统调用的封装（wrapper functions），如 <code>fork</code>、<code>pipe</code> 以及各种 I/O 原语（<code>read</code>、<code>write</code>、<code>close</code> 等等）。
 
-### lseek
+#### lseek
 重定位读写文件的位置，原型：
 ```c
 off_t lseek(int fd, off_t offset, int whence);
@@ -148,3 +229,40 @@ This is like n, except that if we are in a loop, u will continue execution until
 #### warning: Error disabling address space randomization: Operation not permitted
 
 https://stackoverflow.com/a/35860616
+
+## MAC C环境配置
+
+### brew
+
+[安装brew](https://zhuanlan.zhihu.com/p/111014448)
+
+更换国内源
+```
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
+brew tap --custom-remote --force-auto-update homebrew/core https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git
+brew tap --custom-remote --force-auto-update homebrew/cask https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask.git
+brew tap --custom-remote --force-auto-update homebrew/cask-fonts https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask-fonts.git
+brew tap --custom-remote --force-auto-update homebrew/cask-drivers https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask-drivers.git
+brew tap --custom-remote --force-auto-update homebrew/cask-versions https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask-versions.git
+brew tap --custom-remote --force-auto-update homebrew/command-not-found https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-command-not-found.git
+brew update
+```
+
+## linux编程
+
+### 时间
+
+**tick**
+内核系统的时钟，每隔固定周期，会发出时钟中断，每隔多久发出一个时钟中断，就是一个tick。
+在内核初始化时，硬件被设置为每隔固定周期就发出一个特别的脉冲，这周期即为tick的周期。
+
+**HZ**
+内核系统时钟的频率，即一秒有多少个tick，即每一秒有多少次系统时钟中断
+
+**jiffies / jiffy**
+是内核系统的一个时间单位，每次系统时钟中断发生，就会加1，每秒增加 HZ 的大小，一般是从系统启动时开始累加
+
+**举例**
+内核初始化时，硬件芯片被设定为每隔10ms发出一次脉冲，即每隔10ms为一个tick，则HZ为100，如果当前距离系统启动过了1秒，则jiffy为100.
+
+

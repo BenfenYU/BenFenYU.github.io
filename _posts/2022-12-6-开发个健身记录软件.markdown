@@ -1,0 +1,218 @@
+---
+layout: post
+title:  "开发个健身记录手机APP"
+date:   2022-12-06 19:20:13 +0800
+categories: 开发
+---
+
+# 资源
+
+## 小程序
+
+[官方文档](https://developers.weixin.qq.com/miniprogram/dev/framework/)
+
+[阮一峰博客](https://github.com/ruanyf/wechat-miniprogram-demos)
+
+## 安卓
+[Android 开发者基础知识 Codelab](https://developer.android.com/courses/fundamentals-training/toc-v2)
+
+[layout中间加margin](https://stackoverflow.com/questions/4259467/how-to-make-space-between-linearlayout-children)
+
+# 安卓开发
+
+## 布局
+布局靠的是view，多个view可以组成一个view group，同一个view group内，符合某些规则。view group和view中均可嵌套view group或者view。
+- Constrain layout
+- Relative layout，设置其中的view的相对位置来布局
+- Linear layout，按照xml中的顺序，进行布局，可以水平，也可以竖直
+
+## 单位
+
+Android的开发文档中定义了px、dp、sp，
+
+px ： 像素单位，比如我们通常说的手机分辨列表800*400都是px的单位
+
+sp ： 同dp相似，还会根据用户的字体大小偏好来缩放
+
+dp / dip ： 虚拟像素，在不同的像素密度的设备上会自动适配
+
+
+# JAVA
+
+## 语言本身
+
+### 线程安全
+如果一个类被设计为允许多线程正确访问，我们就说这个类就是“线程安全”的（thread-safe），Java标准库的java.lang.StringBuffer也是线程安全的。
+
+还有一些不变类，例如String，Integer，LocalDate，它们的所有成员变量都是final，多线程同时访问时只能读不能写，这些不变类也是线程安全的。
+
+最后，类似Math这些只提供静态方法，没有成员变量的类，也是线程安全的。
+
+除了上述几种少数情况，大部分类，例如ArrayList，都是非线程安全的类，我们不能在多线程中修改它们。但是，如果所有线程都只读取，不写入，那么ArrayList是可以安全地在线程间共享的。
+
+### volatile 关键字
+线程间共享变量需要使用volatile关键字标记，确保每个线程都能读取到更新后的变量值
+
+### synchronized 修饰方法
+因此，用synchronized修饰的方法就是同步方法，它表示整个方法都必须用this实例加锁，如果和static共同修饰方法，表明对 类名.class 上锁
+
+
+### 包
+
+    1、把功能相似或相关的类或接口组织在同一个包中，方便类的查找和使用。
+
+    2、如同文件夹一样，包也采用了树形目录的存储方式。同一个包中的类名字是不同的，不同的包中的类的名字是可以相同的，当同时调用两个不同包中相同类名的类时，应该加上包名加以区别。因此，包可以避免名字冲突。
+
+    3、包也限定了访问权限，拥有包访问权限的类才能访问某个包中的类。
+
+ 类文件中可以包含任意数量的 import 声明。import 声明必须在包声明之后，类声明之前。 
+
+### final关键字
+
+final在Java中是一个保留的关键字，可以声明成员变量、方法、类以及本地变量。一旦你将引用声明作final，你将不能改变这个引用了，编译器会检查代码，如果你试图将变量再次初始化的话，编译器会报编译错误。final变量是只读的。
+
+final关键字的3个重点优势：
+（1）可以利用不可变性实现字符串常量池，提高了性能；
+（2）天生线程安全,不需要额外的同步开销；
+（3）非常适合做HashMap 的 key（因为不变）；
+
+举例：
+final + 值变量，则该变量的值不能改变；
+final + 引用变量（如hashmap），则该变量的引用不能改变，即指向该map；
+final + 方法，不能被子类重写；
+final + 类，不能被继承；
+
+### List\<E\>
+
+E - the type of elements in this list
+
+List 是一个接口，父接口为Collection<E>, Iterable<E>
+
+List 是一个有序的集合，有不同的实现，比如 ArrayList, LinkedList, Vector 和 Stack
+
+List\<T\>，表示集合中所有元素都为T类型，编译时不确定具体什么类型，运行时确定类型，可执行 读写删除等操作
+
+List\<?\>，表示集合中的元素为任意类型，可以不同，可执行 读删除
+
+List\<Object>，表示集合中元素均为Object类型，可执行 读写删除等操作，需要自己转型（cast）
+
+初始化：
+
+List.add
+
+```Java
+List<Integer> list = new ArrayList<Integer>();
+list.add(1);
+list.add(3);
+System.out.println("ArrayList : " + list.toString());
+```
+
+List.of
+
+Java9
+
+constructs a compact and **unmodifiable** list
+```Java
+// Creating a list using List.of()
+List<Integer> unmodifiableList = List.of(1, 2, 3);
+  
+// Printing the List
+System.out.println("List : "+ unmodifiableList.toString());
+```
+
+### protected 关键字
+
+[这篇介绍的不错](https://blog.csdn.net/Someday_spark/article/details/80006215)
+
+被 protected 修饰的成员对于本包和其子类可见
+
+protected修饰的变量和方法会被子类继承，当子类和父类不在同一个包中时，子类只可以访问自己继承而来的方法和变量，不可以访问父类的，下面这个例子很好
+
+```java
+package he;
+import it.Testing;
+public class test3 extends Testing {
+    public test3() {
+        Testing mTesting = new Testing();
+        mTesting.t1 = 1; // error
+    }
+
+}
+
+package he;
+import it.Testing;
+public class test3 extends Testing {
+    public test3() {
+        t1 = 1; // ok
+    }
+}
+```
+
+### 类成员变量
+如下方式定义，受前缀限制
+
+```java
+public class xxx {
+    //1、定义类成员变量mCurrentResult ： [数据类型] [变量名]
+    public String mxxx;
+}
+```
+
+### static
+
+修饰变量和内部类(不能修饰常规类)，其中所修饰变量称为类变量或静态变量。静态变量是和类层次的变量,每个实例共享这个静态变量，在类加载时初始化。
+
+### this和super
+[这篇不错](https://www.runoob.com/w3cnote/the-different-this-super.html)
+
+this是指向自身类对象的指针， super 可以理解为是指向自己超（父）类对象的一个指针，而这个超类指的是离自己最近的一个父类
+
+this的作用：
+- 普通的直接引用对象
+- 形参与成员名字重名，用 this 来区分
+- 引用其它的构造函数（根据参数区分其它构造函数）
+
+### lambda 表达式 （闭包）
+lambda 表达式的语法格式如下：
+
+    (parameters) -> expression
+    或
+    (parameters) ->{ statements; }
+
+ lambda 表达式只能引用标记了 final 的外层局部变量，这就是说不能在 lambda 内部修改定义在域外的局部变量，否则会编译错误。
+
+[这篇不错](https://www.liaoxuefeng.com/wiki/1252599548343744/1305158055100449)
+
+实例化接口时，必须实现接口的抽象方法，当一个接口只有一个抽象方法时，可以用lambda表达式，可以让代码更简洁
+
+### 数组
+Java的数组有几个特点：
+- 数组所有元素初始化为默认值，整型都是0，浮点型是0.0，布尔型是false；
+- 数组一旦创建后，大小就不可改变。
+
+声明和初始化
+
+```java
+dataType[] arrayRefVar = new dataType[arraySize];
+dataType[] arrayRefVar = {value0, value1, ..., valuek};
+type[][] typeName = new type[typeLength1][typeLength2];
+```
+
+java.util.Arrays类，提供了一些静态方法，比如排序和查找等
+
+
+# 工具
+
+## Gradle
+
+[介绍](https://docs.gradle.org/current/userguide/userguide.html)
+
+Gradle is an open-source build automation tool focused on flexibility and performance
+
+# TODO
+* [x] java 类内的变量，全局？属性？this.xx ?
+* [x] java lambda 表达式
+* [x] java 字符串操作。String类的方法
+* [x] java 访问网络 [资料](https://www.liaoxuefeng.com/wiki/1252599548343744/1255945371526048)
+* [x] java 数组
+* [ ] 多线程

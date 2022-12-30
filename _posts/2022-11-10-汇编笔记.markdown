@@ -1,0 +1,251 @@
+---
+layout: post
+title:  "汇编笔记"
+date:   2022-11-06 19:20:13 +0800
+categories: 汇编
+---
+
+# Intel 汇编语法
+
+## 资料
+## 语法
+
+**as86汇编**
+能产生16位代码的intel 8086汇编
+具体可见《linux内核剖析》第三章。
+
+**内嵌汇编**
+.c文件中的汇编代码，gcc汇编
+
+
+汇编语言的汇编过程：汇编->链接。
+
+汇编程序中以.开头的名称并不是指令的助记符，不会被翻译成机器指令，而是给汇编器一些特殊指示，称为汇编指示（Assembler Directive）或伪操作（Pseudo-operation），由于它不是真正的指令所以加个“伪”字。.section指示把代码划分成若干个段（Section），程序被操作系统加载执行时，每个段被加载到不同的地址，操作系统对不同的页面设置不同的读、写、执行权限。
+
+```x86asm
+.section .text
+... ; text段
+.section .data
+... ; data段
+.global start ; 可以被链接器用到的符号（起始是个地址）
+start:
+... ; 会被执行的指令
+```
+
+### xor
+按位异或
+
+### seg {段寄存器}
+表示，下一条语句的操作数，在该段寄存器所指的段中
+
+如：
+```x86asm
+seg fs
+```
+
+### lgs
+假设此时默认的的段寄存器为 *, 将 *:src表示的地址，放入 gs:dest
+
+用法
+```x86asm
+lgs dest src
+lgs si, bx
+```
+
+### .global 
+声明一个全局符号。
+
+### .data
+声明一个静态数据区域，这个关键字下面的几行，为声明的数据区域里的变量。可读可写。
+
+### .text
+只读的代码区
+
+### .bss
+可读可写且没有初始化的数据区
+
+### .org
+是一条伪指令，是链接时用的，给编译器看的伪指令。实现规定程序的起始地址，即从当前段的基址开始的偏移地址，如果两个.org指令间有自由空间，则0填充。
+
+### entry
+汇编程序入口点，完整的汇编程序中至少有一个entry，有多个时，入口由链接器指定。
+
+### mov
+mov指令将源操作数复制到目的操作数,
+用法: mov destination,source
+
+### sub
+用法: sub dst, src
+sub指令为减法指令，(dst)<- (dst) - (src)
+
+### rep
+rep指令常和串传送指令搭配使用，根据cx的值，重复执行后面(或下面)的命令，直到cx=0。
+如：
+后面是movsb，则为以字节为单位传送，
+源地址：((ds)*16 + (si))
+目标地址：((es)*16 + (di))
+如果DF = 0则：   
+(si) = (si) + 1
+(di) = (di) + 1
+如果DF = 1则：    
+(si) = (si) - 1
+(di) = (di) - 1
+
+如果时movsw，则si和di每次变化2 (字节)
+
+### jmpi
+间接跳转到另一个段去执行，
+用法: jmpi a, b 为跳到 b:a执行，jmpi a 为跳到cs:a执行。
+
+### movx
+其中 x 可以是下面的字符:
+- l用于32位的长字值
+- w用于16位的字值
+- b用于8位的字节值
+
+如果语句是 movw，则解释为将DS：SI的内容复制至ES：DI，SI和DI的值会自增一个字的长度（因为是w）
+
+测试标志位的JCC指令们:
+
+JC
+如果进位位被置位则跳转
+
+JNC
+如果进位位没有置位则跳转
+
+JZ
+如果0标志被置位则跳转
+
+JNZ
+如果0标志没有置位则跳转
+
+\#为常数量前缀。
+\# + 立即数：表示操作立即数，比如放入寄存器；
+\# + 标号(如msg1这种)：表示操作标号的地址，如放入寄存器等；
+上述情况如果不加\#，会变成寻址语句。
+
+LDS 
+传送目标指针,把指针内容装入DS.例: LDS SI,string ;把段地址:偏移地址存到DS:SI. string 里的内容为偏移地址。
+
+rol
+循环左移指令：ROL DEST，COUNT
+指令功能：把目的地址中的数据循环左移COUNT次，每次从最高位（最左）移出的数据位都补充到最低位（最右），最后从最高位（最左）移出的数据位保存到CF标志位。
+标志位影响：CF标志用于保存最后从最高位移出的数据位。如果COUNT=1，OF标志有意义，如果移位前后数据的符号位发生了变化，OF=1；如果符号位没有发生变化，OF=0。如果COUNT>1，OF标志不确定（没有意义）。
+
+loop
+每次执行loop指令，cx减一，然后判断cx是否等于0，如果不为0，则转移到loop指令后的标号处，实现循环；如果为0，则顺序执行。
+
+call, ret
+CALL 指令调用一个过程，指挥处理器从新的内存地址开始执行。过程使用 RET（从过程返回）指令将处理器转回到该过程被调用的程序点上。
+
+中括号 []
+[博客](https://blog.csdn.net/zhou191954/article/details/8556922?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-0-8556922-blog-8738570.pc_relevant_3mothn_strategy_and_data_recovery&spm=1001.2101.3001.4242.1&utm_relevant_index=3)
+
+# AT&T 汇编语法
+
+## 资料
+
+[1](https://gist.github.com/mishurov/6bcf04df329973c15044)
+[2](https://chyyuu.gitbooks.io/ucore_os_docs/content/lab0/lab0_2_3_1_2_att_asm.html)
+
+## 语法
+
+**GNU as汇编**
+使用32位代码，使用AT&T系统V语法，比如保护模式下的head.s
+
+#### sub*
+```
+! destination-source -> destination
+sub source, destination 
+```
+
+sub, subw, subl
+
+#### add*
+```
+! destination+source -> destination
+add source, destination 
+```
+
+add, addw, addl
+
+
+#### %
+% + 寄存器/立即数/变量名 
+表示取后面内容的值。
+
+在内联汇编（嵌入汇编）语句中，寄存器名称前必须写上两个百分号（如: %%eax），这这样编译产生的汇编代码中，就会变成 %eax。
+
+#### xchg
+交换指令，可进行 寄存器与寄存区、寄存器与内存 之间的变量内容交换，两个操作数之间的数据类型（长度要相同）。寄存器不能是段寄存器，两个操作数不能同时为内存变量，xchg指令不影响标志位。
+举例：
+```
+# eax中被存入栈顶指针指向的区域的值（一个双字），esp指针（栈顶）指向的内存区域被存入eax中的值
+xchgl %eax, (%esp)    
+```
+
+#### 小括号 ()
+将小括号中的值视为内存的地址，取改地址上的值。
+举例：
+```
+# 将ebx中的值视为内存地址，改地址指向的值存入edx
+move (%ebx), %edx
+```
+
+#### lea
+加载地址到寄存器，源操作数只能是有效地址，目标操作数只能是寄存器
+```
+# 加载该地址到ebp
+lea 0x8151abc, %ebp
+
+# 加载 44+%esp中的值 到edx 
+lea 44(%esp), %edx
+```
+
+#### call
+调用函数
+几种调用方式举例：
+```
+# 间接调用
+# * 表示调用eax指定地址处的函数
+call * %eax
+```
+
+#### pop*
+出栈，取出元素到某个位置
+举例：
+popl
+```
+popl %eax
+# 将栈顶数值弹出栈，并放入eax，可分解为：
+# movl (%esp), %eax ——> eax = *(int32_t *)esp
+# addl $4, %esp ——> esp = esp + 4
+```
+
+#### CLD和STD
+CLD与STD是用来操作方向标志位DF（Direction Flag）。CLD使DF复位，即DF=0，STD使DF置位，即DF=1.用于串操作指令中。
+
+#### SCASB
+等价于 cmp byte ptr [edi], al
+即比较edi中指向的内存中的某个字节大小的值和al中的值的大小，对标志位的影响相当于sub指令，同时，比较完本次的字节后，会修改edi中的值（修改地址），如果标志DF为0，则 inc EDI；如果DF为1，则 dec EDI。
+
+#### REPNE 和 PREPNZ
+当ECX!=0并且ZF==0时，重复执行后边的指令，每执行一次ECX的值减1，REPNE 和 REPNZ 是同一条指令的不同助记符。
+举例：
+```
+REPNE SCAS BYTE PTR ES:[EDI]
+```
+
+#### je/jz 和 jne/jnz
+je 表示等于就跳转，jne是不等于就跳转。
+前者ZF位为0时跳转执行，后者ZF标志位不为0时跳转执行。
+
+#### STOSL
+将eax中的值保存到ES:EDI指向的地址，若设置了EFLAGS的DF位置位，则edi自减4，否则自加4.
+
+#### CLTS
+清理CR0中的TS位。
+
+#### 立即数
+
+$前缀表示一个立即数，带0x的为16进制数，否则默认为十进制数
